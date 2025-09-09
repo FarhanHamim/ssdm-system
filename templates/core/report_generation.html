@@ -1,0 +1,446 @@
+{% extends 'base.html' %}
+
+{% block title %}Report Generation - SDDM{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 animate-fade-in">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mobile-stack">
+                <div class="text-center md:text-left">
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Report Generation</h1>
+                    <p class="text-lg text-gray-600">Generate comprehensive reports with advanced filtering and analytics</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'dashboard' %}" 
+                       class="inline-flex items-center px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-bold rounded-2xl border-2 border-gray-300 hover:border-gray-400 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Back to Dashboard
+                    </a>
+                    <span class="inline-flex items-center px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Report Generator
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border-2 border-white/50 p-6 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Profiles</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ stats.total_profiles }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border-2 border-white/50 p-6 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Filtered Results</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ stats.filtered_profiles }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border-2 border-white/50 p-6 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Active Filters</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ filters|length }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border-2 border-white/50 p-6 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Export Options</p>
+                        <p class="text-2xl font-bold text-gray-900">3</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="bg-white/95 backdrop-blur-md rounded-3xl shadow-lg border-2 border-white/50 p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <svg class="w-8 h-8 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"/>
+                </svg>
+                Advanced Filters
+            </h2>
+            
+            <form method="GET" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Agency Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Agency/Office</label>
+                        <select name="agency" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
+                            <option value="">All Agencies</option>
+                            {% for agency in filter_options.agencies %}
+                                <option value="{{ agency }}" {% if filters.agency_project_cluster_office == agency %}selected{% endif %}>
+                                    {{ agency|title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Duty Station Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Duty Station</label>
+                        <select name="duty_station" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
+                            <option value="">All Stations</option>
+                            {% for station in filter_options.duty_stations %}
+                                <option value="{{ station }}" {% if filters.duty_station == station %}selected{% endif %}>
+                                    {{ station|title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Nationality Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nationality</label>
+                        <select name="nationality" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
+                            <option value="">All Nationalities</option>
+                            {% for nationality in filter_options.nationalities %}
+                                <option value="{{ nationality }}" {% if filters.nationality == nationality %}selected{% endif %}>
+                                    {{ nationality|title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Contact Type Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Contact Type</label>
+                        <select name="contact_type" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
+                            <option value="">All Types</option>
+                            {% for contact_type in filter_options.contact_types %}
+                                <option value="{{ contact_type }}" {% if filters.contact_type == contact_type %}selected{% endif %}>
+                                    {{ contact_type }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Gender Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                        <select name="gender" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
+                            <option value="">All Genders</option>
+                            {% for gender in filter_options.genders %}
+                                <option value="{{ gender }}" {% if filters.gender == gender %}selected{% endif %}>
+                                    {{ gender|title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Date From Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Created From</label>
+                        <input type="date" name="date_from" value="{{ filters.date_from|default:'' }}" 
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
+                    </div>
+
+                    <!-- Date To Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Created To</label>
+                        <input type="date" name="date_to" value="{{ filters.date_to|default:'' }}" 
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
+                    </div>
+
+                    <!-- Created By Role Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Created By Role</label>
+                        <select name="created_by_role" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
+                            <option value="">All Roles</option>
+                            {% for role in filter_options.roles %}
+                                <option value="{{ role }}" {% if filters.created_by_role == role %}selected{% endif %}>
+                                    {% if role == 'super_admin' %}Super Admin
+                                    {% elif role == 'security_admin' %}Security Admin
+                                    {% elif role == 'user' %}User
+                                    {% else %}{{ role|title }}{% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                    <div class="flex space-x-4">
+                        <button type="submit" 
+                                class="inline-flex items-center px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 shadow-lg hover:shadow-xl">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            Apply Filters
+                        </button>
+                        <a href="{% url 'report_generation' %}" 
+                           class="inline-flex items-center px-8 py-3 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-500 focus:ring-opacity-50 shadow-lg hover:shadow-xl">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            Clear Filters
+                        </a>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button type="button" onclick="exportToCSV()" 
+                                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-lg hover:shadow-xl">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Export CSV
+                        </button>
+                        <a href="{% url 'export_pdf' %}?{{ request.GET.urlencode }}" 
+                           class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 shadow-lg hover:shadow-xl">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                            </svg>
+                            Export PDF
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        {% if profiles %}
+        <div class="bg-white/95 backdrop-blur-md rounded-3xl shadow-lg border-2 border-white/50 overflow-hidden">
+            <div class="px-8 py-6 bg-gradient-to-r from-blue-500 to-blue-600">
+                <h2 class="text-2xl font-bold text-white flex items-center">
+                    <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    Filtered Results ({{ stats.filtered_profiles }} profiles)
+                </h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agency</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duty Station</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Type</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created Date</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for profile in profiles %}
+                        <tr class="hover:bg-gray-50 transition-all duration-200">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
+                                            <span class="text-sm font-medium text-white">{{ profile.name|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ profile.name }}</div>
+                                        <div class="text-sm text-gray-500">ID: {{ profile.employee_id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ profile.agency_project_cluster_office|title }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ profile.duty_station|title }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    {{ profile.contact_type }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ profile.created_by.username }}</div>
+                                <div class="text-sm text-gray-500">{{ profile.created_by.get_role_display }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ profile.created_at|date:"M d, Y" }}</div>
+                                <div class="text-sm text-gray-500">{{ profile.created_at|date:"g:i A" }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'profile_detail' profile.id %}" 
+                                       class="text-blue-600 hover:text-blue-900 transition-colors duration-200">
+                                        View
+                                    </a>
+                                    <a href="{% url 'profile_edit' profile.id %}" 
+                                       class="text-green-600 hover:text-green-900 transition-colors duration-200">
+                                        Edit
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="bg-white/95 backdrop-blur-md rounded-3xl shadow-lg border-2 border-white/50 p-16 text-center">
+            <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-gray-400 to-gray-500 rounded-3xl mb-8">
+                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">No Results Found</h3>
+            <p class="text-gray-600 mb-6">Try adjusting your filters or clear all filters to see all profiles.</p>
+            <a href="{% url 'report_generation' %}" 
+               class="inline-flex items-center px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-all duration-300">
+                Clear All Filters
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Analytics Section -->
+        {% if stats.filtered_profiles > 0 %}
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Agency Distribution -->
+            <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border-2 border-white/50 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Distribution by Agency</h3>
+                <div class="space-y-3">
+                    {% for item in stats.by_agency %}
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-600">{{ item.agency_project_cluster_office|title }}</span>
+                        <div class="flex items-center">
+                            <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: {% widthratio item.count stats.filtered_profiles 100 %}%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-gray-900">{{ item.count }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Duty Station Distribution -->
+            <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border-2 border-white/50 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Distribution by Duty Station</h3>
+                <div class="space-y-3">
+                    {% for item in stats.by_duty_station %}
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-600">{{ item.duty_station|title }}</span>
+                        <div class="flex items-center">
+                            <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: {% widthratio item.count stats.filtered_profiles 100 %}%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-gray-900">{{ item.count }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function exportToCSV() {
+    // Get current filter parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const filters = {};
+    
+    // Collect all filter values
+    const filterInputs = document.querySelectorAll('select[name], input[name]');
+    filterInputs.forEach(input => {
+        if (input.value) {
+            filters[input.name] = input.value;
+        }
+    });
+    
+    // Create CSV content
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Name,Employee ID,Agency,Duty Station,Contact Type,Nationality,Gender,Created Date,Created By\n";
+    
+    // Get table data
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 6) {
+            const name = cells[0].textContent.trim().replace(/,/g, ';');
+            const employeeId = cells[0].querySelector('.text-sm.text-gray-500')?.textContent.replace('ID: ', '').trim() || '';
+            const agency = cells[1].textContent.trim().replace(/,/g, ';');
+            const dutyStation = cells[2].textContent.trim().replace(/,/g, ';');
+            const contactType = cells[3].textContent.trim().replace(/,/g, ';');
+            const createdBy = cells[4].textContent.trim().replace(/,/g, ';');
+            const createdDate = cells[5].textContent.trim().replace(/,/g, ';');
+            
+            csvContent += `${name},${employeeId},${agency},${dutyStation},${contactType},,${createdBy},${createdDate}\n`;
+        }
+    });
+    
+    // Create download link
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `employee_profiles_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Add loading states for export buttons
+document.addEventListener('DOMContentLoaded', function() {
+    const exportButtons = document.querySelectorAll('a[href*="export"], button[onclick*="export"]');
+    
+    exportButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Add loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = `
+                <svg class="animate-spin w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Exporting...
+            `;
+            this.disabled = true;
+            
+            // Reset after a delay (for CSV export)
+            if (this.onclick) {
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 2000);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

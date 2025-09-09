@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Profile - {{ profile.get_full_name }} - SDDM{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="card">
+        <div class="text-center">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+            </div>
+            
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">Delete Employee Profile</h1>
+            
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <p class="text-red-800 font-medium mb-2">Warning: This action cannot be undone!</p>
+                <p class="text-red-700 text-sm">
+                    You are about to permanently delete the profile for 
+                    <strong>{{ profile.name }}</strong> ({{ profile.employee_id }}).
+                    This will also remove all dependent information associated with this profile.
+                </p>
+            </div>
+            
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 text-left">
+                <h3 class="font-semibold text-gray-900 mb-2">Profile Details:</h3>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-gray-600">Employee ID:</span>
+                        <span class="font-medium">{{ profile.employee_id }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Name:</span>
+                        <span class="font-medium">{{ profile.name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Department:</span>
+                        <span class="font-medium">{{ profile.department }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Position:</span>
+                        <span class="font-medium">{{ profile.position }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Dependents:</span>
+                        <span class="font-medium">{{ profile.number_of_dependents }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <div class="flex justify-center space-x-4">
+                    <a href="{% url 'dashboard' %}" class="btn-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-danger">
+                        Delete Profile
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

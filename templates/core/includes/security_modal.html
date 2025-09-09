@@ -1,0 +1,162 @@
+<!-- Security Info Modal -->
+<div id="securityModal" class="fixed inset-0 bg-black bg-opacity-50 hidden" style="z-index: 50;">
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Edit Security Information</h3>
+                    <button onclick="closeSecurityModal()" class="text-gray-400 hover:text-gray-500">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <form id="securityForm" class="p-6">
+                {% csrf_token %}
+                <div class="space-y-6">
+                    <!-- Radio Information -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-gray-900 mb-4">Radio Information</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Radio Call Sign</label>
+                                <input type="text" name="radio_call_sign" class="form-input rounded-lg w-full">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Radio Serial ID</label>
+                                <input type="text" name="radio_serial_id" class="form-input rounded-lg w-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Zone and Office -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-gray-900 mb-4">Location Information</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Zone Name with Appointment</label>
+                                <input type="text" name="zone_name" class="form-input rounded-lg w-full">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Office Location Address</label>
+                                <textarea name="office_address" rows="2" class="form-textarea rounded-lg w-full resize-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Appointment - Unit Based Warden</label>
+                                <input type="text" name="appointment" class="form-input rounded-lg w-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ID Information -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-gray-900 mb-4">ID Information</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">UNID #</label>
+                                <input type="text" name="unid" class="form-input rounded-lg w-full">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">RFID Number</label>
+                                <input type="text" name="rfid" class="form-input rounded-lg w-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Important Dates -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-gray-900 mb-4">Important Dates</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">UNID Issue Date</label>
+                                <input type="date" name="unid_issue_date" class="form-input rounded-lg w-full">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ID/Contact Expiry</label>
+                                <input type="date" name="id_expiry" class="form-input rounded-lg w-full">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ID Deposit Date</label>
+                                <input type="date" name="id_deposit_date" class="form-input rounded-lg w-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Training Dates -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-gray-900 mb-4">Training Dates</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">BSAFE</label>
+                                <input type="date" name="bsafe_date" class="form-input rounded-lg w-full">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">SAT</label>
+                                <input type="date" name="sat_date" class="form-input rounded-lg w-full">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">SBFAT</label>
+                                <input type="date" name="sbfat_date" class="form-input rounded-lg w-full">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" onclick="closeSecurityModal()" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentSubmissionId = null;
+
+function closeSecurityModal() {
+    document.getElementById('securityModal').classList.add('hidden');
+    currentSubmissionId = null;
+}
+
+function populateSecurityModal(data) {
+    currentSubmissionId = data.id;
+    Object.keys(data).forEach(key => {
+        const input = document.querySelector(`[name="${key}"]`);
+        if (input) input.value = data[key] || '';
+    });
+}
+
+// Form submission
+document.getElementById('securityForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!currentSubmissionId) return;
+
+    const formData = new FormData(this);
+    fetch(`/api/submissions/${currentSubmissionId}/security/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeSecurityModal();
+            window.location.reload();
+        }
+    });
+});
+</script>

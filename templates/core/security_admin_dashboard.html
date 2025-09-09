@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+
+{% block title %}Security Admin Dashboard - SDDM{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Security Admin Dashboard</h1>
+                    <p class="mt-1 text-sm text-gray-600">View and manage employee security information</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="inline-flex items-center px-4 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-100">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        Security Admin
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        {% if profiles %}
+            <!-- Search -->
+            <div class="mb-6">
+                <div class="relative">
+                    <input type="text" 
+                           id="search" 
+                           placeholder="Search by name or employee ID..." 
+                           class="w-full pl-10 pr-4 py-3 text-gray-900 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submissions List -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee Details</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agency/Office</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submission Date</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for profile in profiles %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                                <span class="text-blue-700 font-medium">{{ profile.name|first|upper }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">{{ profile.name }}</div>
+                                            <div class="text-sm text-gray-500">ID: {{ profile.employee_id }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{{ profile.agency }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{{ profile.submitted_at|date:"M d, Y" }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button onclick="openSecurityModal('{{ profile.id }}')" 
+                                            class="inline-flex items-center px-3 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                        Edit Security Info
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <!-- No Submissions State -->
+            <div class="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-200">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No Submissions Yet</h3>
+                <p class="text-gray-500">There are no employee profile submissions to review at this time.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Security Info Modal -->
+<div id="securityModal" class="fixed inset-0 bg-black bg-opacity-50 hidden" style="z-index: 50;">
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-200 sticky top-0 bg-white">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Edit Security Information</h3>
+                    <button onclick="closeSecurityModal()" class="text-gray-400 hover:text-gray-500">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <form id="securityForm" class="p-6">
+                <div class="space-y-6">
+                    <!-- Radio Information Section -->
+                    <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                        <h4 class="font-medium text-gray-900">Radio Information</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Radio Call Sign</label>
+                                <input type="text" name="radio_call_sign" class="form-input rounded-lg w-full">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Radio Serial ID</label>
+                                <input type="text" name="radio_serial_id" class="form-input rounded-lg w-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location Information Section -->
+                    <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                        <h4 class="font-medium text-gray-900">Location Information</h4>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Zone Name with Appointment</label>
+                            <input type="text" name="zone_name" class="form-input rounded-lg w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Office Location Address</label>
+                            <textarea name="office_address" rows="2" class="form-textarea rounded-lg w-full"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Appointment - Unit Based Warden</label>
+                            <input type="text" name="appointment" class="form-input rounded-lg w-full">
+                        </div>
+                    </div>
+
+                    <!-- ID Information Section -->
+                    <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                        <h4 class="font-medium text-gray-900">ID Information</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">UNID #</label>
+                                <input type="text" name="unid" class="form-input rounded-lg w-full">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">RFID Number</label>
+                                <input type="text" name="rfid" class="form-input rounded-lg w-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dates Section -->
+                    <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                        <h4 class="font-medium text-gray-900">Important Dates</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">UNID Issue Date</label>
+                                <input type="date" name="unid_issue_date" class="form-input rounded-lg w-full">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ID/Contact Expiry</label>
+                                <input type="date" name="id_expiry" class="form-input rounded-lg w-full">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ID Deposit Date</label>
+                                <input type="date" name="id_deposit_date" class="form-input rounded-lg w-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Training Dates Section -->
+                    <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                        <h4 class="font-medium text-gray-900">Training Dates</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">BSAFE</label>
+                                <input type="date" name="bsafe_date" class="form-input rounded-lg w-full">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">SAT</label>
+                                <input type="date" name="sat_date" class="form-input rounded-lg w-full">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">SBFAT</label>
+                                <input type="date" name="sbfat_date" class="form-input rounded-lg w-full">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" onclick="closeSecurityModal()" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentProfileId = null;
+
+function openSecurityModal(profileId) {
+    currentProfileId = profileId;
+    // Fetch profile data
+    fetch(`/api/profiles/${profileId}/security/`)
+        .then(response => response.json())
+        .then(data => {
+            // Populate form fields
+            Object.keys(data).forEach(key => {
+                const input = document.querySelector(`[name="${key}"]`);
+                if (input) input.value = data[key] || '';
+            });
+            // Show modal
+            document.getElementById('securityModal').classList.remove('hidden');
+        });
+}
+
+function closeSecurityModal() {
+    document.getElementById('securityModal').classList.add('hidden');
+    currentProfileId = null;
+}
+
+// Search functionality
+document.getElementById('search').addEventListener('input', debounce(function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+}, 300));
+
+// Form submission
+document.getElementById('securityForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!currentProfileId) return;
+
+    const formData = new FormData(this);
+    fetch(`/api/profiles/${currentProfileId}/security/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeSecurityModal();
+            // Optionally refresh the page or update the table
+            window.location.reload();
+        }
+    });
+});
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+</script>
+{% endblock %}

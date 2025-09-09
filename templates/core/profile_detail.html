@@ -1,0 +1,523 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile Detail - {{ profile.get_full_name }} - SDDM{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="mb-8">
+        <div class="flex justify-between items-center">
+            <div class="flex-1">
+                <div class="flex items-center mb-3">
+                    <div class="w-12 h-12 bg-gradient-to-r from-undp-blue to-undp-accent rounded-2xl flex items-center justify-center shadow-lg mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-4xl font-bold text-gray-900 mb-2">Employee Profile</h1>
+                        <div class="flex items-center space-x-4">
+                            <p class="text-xl text-gray-600 font-semibold">{{ profile.employee_id }} - {{ profile.get_full_name }}</p>
+                            {% if profile.status == 'approved' %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-300">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                    Approved
+                                </span>
+                            {% elif profile.status == 'pending_approval' %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 border border-yellow-300">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                    </svg>
+                                    Pending Approval
+                                </span>
+                            {% elif profile.status == 'rejected' %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 border border-red-300">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                    Rejected
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 border border-gray-300">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                    </svg>
+                                    Draft
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% if profile.created_by %}
+                    <div class="ml-16">
+                        <p class="text-sm text-gray-500 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                            </svg>
+                            Created by: <span class="font-semibold text-gray-700 ml-1">{{ profile.created_by.get_full_name }}</span>
+                            <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">{{ profile.created_by.get_role_display }}</span>
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="flex space-x-4">
+                {% if user_role == 'super_admin' or user_role == 'security_admin' %}
+                    <a href="{% url 'profile_edit' profile.pk %}" 
+                       class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-undp-blue to-undp-accent text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-undp-blue focus:ring-opacity-50 shadow-undp hover:shadow-undp-lg border-2 border-transparent hover:border-white/20 text-lg tracking-wide">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        Edit Profile
+                    </a>
+                {% endif %}
+                
+                {% if user_role == 'super_admin' and profile.status == 'pending_approval' %}
+                    <form method="post" action="{% url 'approve_profile' profile.pk %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-lg hover:shadow-xl border-2 border-transparent hover:border-white/20 text-lg tracking-wide">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Approve Profile
+                        </button>
+                    </form>
+                    
+                    <button onclick="showRejectModal()" 
+                            class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 shadow-lg hover:shadow-xl border-2 border-transparent hover:border-white/20 text-lg tracking-wide">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Reject Profile
+                    </button>
+                {% endif %}
+                <a href="{% url 'dashboard' %}" 
+                   class="inline-flex items-center px-6 py-3 bg-white hover:bg-undp-light text-undp-blue font-bold rounded-2xl border-3 border-undp-blue hover:border-undp-dark transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-undp-blue focus:ring-opacity-30 shadow-xl hover:shadow-2xl text-lg tracking-wide">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Back to Dashboard
+                </a>
+                {% if user_role == 'super_admin' %}
+                    <a href="{% url 'report_generation' %}" 
+                       class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-2xl hover:shadow-3xl border-2 border-transparent hover:border-white/20 text-lg tracking-wide">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Generate Reports
+                    </a>
+                    <a href="{% url 'profile_delete' profile.pk %}" 
+                       class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 shadow-2xl hover:shadow-3xl border-2 border-transparent hover:border-white/20 text-lg tracking-wide">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0V5a2 2 0 012-2h2a2 2 0 012 2v2m4 0H5"/>
+                        </svg>
+                        Delete Profile
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Basic Information Section - Users and Super Admin Only -->
+    {% if user_role == 'user' or user_role == 'super_admin' %}
+    <div class="card mb-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-2 flex items-center group cursor-pointer hover:text-undp-blue transition-all duration-300">
+            <span class="w-8 h-8 bg-gradient-to-r from-blue-100 to-blue-200 rounded-full flex items-center justify-center mr-3 group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300 shadow-md group-hover:shadow-lg">
+                <span class="text-blue-600 text-sm font-bold">1-25</span>
+            </span>
+            Basic Information (User Editable)
+            <svg class="w-5 h-5 ml-2 text-gray-400 group-hover:text-blue-500 transition-all duration-300 transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+                <label class="form-label text-gray-500">Agency/Project/Cluster/Office</label>
+                <p class="text-gray-900 font-medium">{{ profile.get_agency_project_cluster_office_display }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">R/Ser</label>
+                <p class="text-gray-900">{{ profile.r_ser }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">SL</label>
+                <p class="text-gray-900">{{ profile.sl }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Full Name</label>
+                <p class="text-gray-900 font-medium">{{ profile.name }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Post Title/Designation</label>
+                <p class="text-gray-900">{{ profile.post_title_designation|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Nationality</label>
+                <p class="text-gray-900">{{ profile.get_nationality_display }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Employee ID</label>
+                <p class="text-gray-900 font-medium">{{ profile.employee_id }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Gender</label>
+                <p class="text-gray-900">{{ profile.get_gender_display }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Date of Birth</label>
+                <p class="text-gray-900">{{ profile.date_of_birth|date:"F j, Y" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Contact Type</label>
+                <p class="text-gray-900">{{ profile.get_contact_type_display }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Duty Station</label>
+                <p class="text-gray-900">{{ profile.get_duty_station_display }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Number of Dependents</label>
+                <p class="text-gray-900">{{ profile.number_of_dependents }}</p>
+            </div>
+            <div class="md:col-span-2 lg:col-span-3">
+                <label class="form-label text-gray-500">Residential Address</label>
+                <p class="text-gray-900">{{ profile.residential_address|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Zone</label>
+                <p class="text-gray-900">{{ profile.zone|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Police Station/Thana</label>
+                <p class="text-gray-900">{{ profile.police_station_thana|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Cell Phone & WhatsApp</label>
+                <p class="text-gray-900">{{ profile.cell_phone_whatsapp|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Emergency Contact Number</label>
+                <p class="text-gray-900">{{ profile.emergency_contact_number|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Emergency Contact Relation</label>
+                <p class="text-gray-900">{{ profile.emergency_contact_relation|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Passport Number</label>
+                <p class="text-gray-900">{{ profile.passport_number|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">UNLP Number</label>
+                <p class="text-gray-900">{{ profile.unlp_number|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Blood Group</label>
+                <p class="text-gray-900">{{ profile.blood_group }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Official Email</label>
+                <p class="text-gray-900">{{ profile.email_official|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Personal Email</label>
+                <p class="text-gray-900">{{ profile.email_personal|default:"Not specified" }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Security Information Section - Security Admin and Super Admin Only -->
+    {% if user_role == 'security_admin' or user_role == 'super_admin' %}
+    <div class="card mb-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-2 flex items-center group cursor-pointer hover:text-red-600 transition-all duration-300">
+            <span class="w-8 h-8 bg-gradient-to-r from-red-100 to-red-200 rounded-full flex items-center justify-center mr-3 group-hover:from-red-200 group-hover:to-red-300 transition-all duration-300 shadow-md group-hover:shadow-lg">
+                <span class="text-red-600 text-sm font-bold">26-38</span>
+            </span>
+            Security Information (Security Admin Editable)
+            <svg class="w-5 h-5 ml-2 text-gray-400 group-hover:text-red-500 transition-all duration-300 transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+                <label class="form-label text-gray-500">Radio Call Sign</label>
+                <p class="text-gray-900">{{ profile.radio_call_sign|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Radio Serial ID</label>
+                <p class="text-gray-900">{{ profile.radio_serial_id|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Zone Name with Appointment</label>
+                <p class="text-gray-900">{{ profile.zone_name_with_appointment|default:"Not specified" }}</p>
+            </div>
+            <div class="md:col-span-2 lg:col-span-3">
+                <label class="form-label text-gray-500">Office Location Address</label>
+                <p class="text-gray-900">{{ profile.office_location_address|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Appointment - Unit Based Warden</label>
+                <p class="text-gray-900">{{ profile.appointment_unit_based_warden|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">UNID Number</label>
+                <p class="text-gray-900">{{ profile.unid_number|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">RFID Number</label>
+                <p class="text-gray-900">{{ profile.rfid_number|default:"Not specified" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">UNID Issue Date</label>
+                <p class="text-gray-900">
+                    {% if profile.unid_issue_date %}
+                        {{ profile.unid_issue_date|date:"F j, Y" }}
+                    {% else %}
+                        <span class="text-gray-500">Not specified</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">ID/Contact Expiry</label>
+                <p class="text-gray-900">
+                    {% if profile.id_contact_expiry %}
+                        {{ profile.id_contact_expiry|date:"F j, Y" }}
+                    {% else %}
+                        <span class="text-gray-500">Not specified</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">ID Deposit Date</label>
+                <p class="text-gray-900">
+                    {% if profile.id_deposit_date %}
+                        {{ profile.id_deposit_date|date:"F j, Y" }}
+                    {% else %}
+                        <span class="text-gray-500">Not specified</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">BSAFE</label>
+                <p class="text-gray-900">
+                    {% if profile.bsafe %}
+                        {{ profile.bsafe|date:"F j, Y" }}
+                    {% else %}
+                        <span class="text-gray-500">Not specified</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">SAT</label>
+                <p class="text-gray-900">
+                    {% if profile.sat %}
+                        {{ profile.sat|date:"F j, Y" }}
+                    {% else %}
+                        <span class="text-gray-500">Not specified</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">SBFAT</label>
+                <p class="text-gray-900">
+                    {% if profile.sbfat %}
+                        {{ profile.sbfat|date:"F j, Y" }}
+                    {% else %}
+                        <span class="text-gray-500">Not specified</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Dependents Section -->
+    <div class="card mb-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-2 flex items-center group cursor-pointer hover:text-green-600 transition-all duration-300">
+            <span class="w-8 h-8 bg-gradient-to-r from-green-100 to-green-200 rounded-full flex items-center justify-center mr-3 group-hover:from-green-200 group-hover:to-green-300 transition-all duration-300 shadow-md group-hover:shadow-lg">
+                <span class="text-green-600 text-sm font-bold">D</span>
+            </span>
+            Dependents ({{ profile.number_of_dependents }})
+            <svg class="w-5 h-5 ml-2 text-gray-400 group-hover:text-green-500 transition-all duration-300 transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+        </h2>
+        {% if profile.dependents.all %}
+            <div class="space-y-4">
+                {% for dependent in profile.dependents.all %}
+                <div class="border-2 border-gray-200 rounded-xl p-6 bg-gradient-to-r from-gray-50 to-white hover:from-white hover:to-gray-50 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:border-blue-300">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label class="form-label text-gray-500">Name</label>
+                            <p class="text-gray-900 font-medium">{{ dependent.name }}</p>
+                        </div>
+                        <div>
+                            <label class="form-label text-gray-500">Relationship</label>
+                            <p class="text-gray-900">{{ dependent.get_relationship_display }}</p>
+                        </div>
+                        <div>
+                            <label class="form-label text-gray-500">Date of Birth</label>
+                            <p class="text-gray-900">{{ dependent.date_of_birth|date:"F j, Y" }}</p>
+                        </div>
+                        <div>
+                            <label class="form-label text-gray-500">Residential Address</label>
+                            <p class="text-gray-900">{{ dependent.residential_address|default:"Not specified" }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-500 text-center py-4">No dependents listed</p>
+        {% endif %}
+    </div>
+
+    <!-- Metadata Section -->
+    <div class="card">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-2 flex items-center group cursor-pointer hover:text-gray-600 transition-all duration-300">
+            <span class="w-8 h-8 bg-gradient-to-r from-gray-100 to-gray-200 rounded-full flex items-center justify-center mr-3 group-hover:from-gray-200 group-hover:to-gray-300 transition-all duration-300 shadow-md group-hover:shadow-lg">
+                <span class="text-gray-600 text-sm font-bold">M</span>
+            </span>
+            Profile Metadata
+            <svg class="w-5 h-5 ml-2 text-gray-400 group-hover:text-gray-500 transition-all duration-300 transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="form-label text-gray-500">Created By</label>
+                <p class="text-gray-900">{{ profile.created_by.get_full_name }} ({{ profile.created_by.get_role_display }})</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Created At</label>
+                <p class="text-gray-900">{{ profile.created_at|date:"F j, Y g:i A" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Last Updated</label>
+                <p class="text-gray-900">{{ profile.updated_at|date:"F j, Y g:i A" }}</p>
+            </div>
+            <div>
+                <label class="form-label text-gray-500">Profile Status</label>
+                <p class="text-gray-900">
+                    <span class="inline-flex items-center px-4 py-2 text-sm font-bold rounded-full bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-2 border-green-300 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        Active
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Super Admin Notice -->
+    {% if is_super_admin %}
+    <div class="mt-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-12 h-12 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full flex items-center justify-center shadow-lg">
+                    <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-lg font-bold text-blue-800">Super Admin Access</h3>
+                <p class="text-blue-700 mt-2 leading-relaxed">
+                    As a Super Admin, you can view all information submitted by both users and security admins. 
+                    You have full access to edit any profile and manage the system.
+                </p>
+                <div class="mt-3 flex space-x-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Full Access
+                    </span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        All Profiles
+                    </span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        System Admin
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Rejection Modal -->
+{% if user_role == 'super_admin' and profile.status == 'pending_approval' %}
+<div id="rejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"/>
+                </svg>
+            </div>
+            <div class="mt-2 px-7 py-3">
+                <h3 class="text-lg font-medium text-gray-900 text-center">Reject Profile</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500 text-center">Are you sure you want to reject this profile? Please provide a reason for rejection.</p>
+                </div>
+                <form method="post" action="{% url 'reject_profile' profile.pk %}" class="mt-4">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="rejection_reason" class="block text-sm font-medium text-gray-700 mb-2">Rejection Reason</label>
+                        <textarea id="rejection_reason" name="rejection_reason" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Please provide a reason for rejection..." required></textarea>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="hideRejectModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                            Reject Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showRejectModal() {
+    document.getElementById('rejectModal').classList.remove('hidden');
+}
+
+function hideRejectModal() {
+    document.getElementById('rejectModal').classList.add('hidden');
+}
+</script>
+{% endif %}
+
+{% if profile.status == 'rejected' and profile.rejection_reason %}
+<div class="max-w-4xl mx-auto mt-6">
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"/>
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">Profile Rejected</h3>
+                <div class="mt-2 text-sm text-red-700">
+                    <p><strong>Reason:</strong> {{ profile.rejection_reason }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
