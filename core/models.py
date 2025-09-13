@@ -214,6 +214,40 @@ class EmployeeProfile(models.Model):
     def get_full_name(self):
         return self.name
 
+    # Completion helpers
+    def is_basic_section_complete(self):
+        required_basic_fields = [
+            'agency_project_cluster_office', 'r_ser', 'sl', 'name', 'post_title_designation',
+            'nationality', 'employee_id', 'gender', 'date_of_birth', 'contact_type',
+            'duty_station', 'residential_address', 'cell_phone_whatsapp',
+            'emergency_contact_number', 'emergency_contact_relation', 'email_official'
+        ]
+        for field_name in required_basic_fields:
+            value = getattr(self, field_name)
+            if value in [None, '', 0]:
+                return False
+        return True
+
+    def is_security_section_complete(self):
+        security_fields = [
+            'radio_call_sign', 'radio_serial_id', 'zone_name_with_appointment',
+            'office_location_address', 'appointment_unit_based_warden', 'unid_number',
+            'rfid_number', 'unid_issue_date', 'id_contact_expiry', 'id_deposit_date',
+            'bsafe', 'sat', 'sbfat'
+        ]
+        for field_name in security_fields:
+            value = getattr(self, field_name)
+            if value in [None, '']:
+                return False
+        return True
+
+    def get_completion_status(self):
+        if self.is_basic_section_complete() and self.is_security_section_complete():
+            return 'complete'
+        if self.is_basic_section_complete():
+            return 'partially_completed'
+        return 'incomplete'
+
 class Dependent(models.Model):
     RELATIONSHIP_CHOICES = [
         ('spouse', 'Spouse'),

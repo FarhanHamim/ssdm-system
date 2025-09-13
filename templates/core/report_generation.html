@@ -100,97 +100,46 @@
             
             <form method="GET" class="space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Agency Filter -->
+                    <!-- Zone Filter -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Agency/Office</label>
-                        <select name="agency" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
-                            <option value="">All Agencies</option>
-                            {% for agency in filter_options.agencies %}
-                                <option value="{{ agency }}" {% if filters.agency_project_cluster_office == agency %}selected{% endif %}>
-                                    {{ agency|title }}
-                                </option>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Zone</label>
+                        <select name="zone" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
+                            <option value="">All Zones</option>
+                            {% for zone in filter_options.zones %}
+                                <option value="{{ zone }}" {% if filters.zone == zone %}selected{% endif %}>{{ zone }}</option>
                             {% endfor %}
                         </select>
                     </div>
 
-                    <!-- Duty Station Filter -->
+                    <!-- Level Filter (Contact Type) -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Duty Station</label>
-                        <select name="duty_station" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
-                            <option value="">All Stations</option>
-                            {% for station in filter_options.duty_stations %}
-                                <option value="{{ station }}" {% if filters.duty_station == station %}selected{% endif %}>
-                                    {{ station|title }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Nationality Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nationality</label>
-                        <select name="nationality" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
-                            <option value="">All Nationalities</option>
-                            {% for nationality in filter_options.nationalities %}
-                                <option value="{{ nationality }}" {% if filters.nationality == nationality %}selected{% endif %}>
-                                    {{ nationality|title }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Contact Type Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Contact Type</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Level</label>
                         <select name="contact_type" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
-                            <option value="">All Types</option>
+                            <option value="">All Levels</option>
                             {% for contact_type in filter_options.contact_types %}
-                                <option value="{{ contact_type }}" {% if filters.contact_type == contact_type %}selected{% endif %}>
-                                    {{ contact_type }}
-                                </option>
+                                <option value="{{ contact_type }}" {% if filters.contact_type == contact_type %}selected{% endif %}>{{ contact_type }}</option>
                             {% endfor %}
                         </select>
                     </div>
 
-                    <!-- Gender Filter -->
+                    <!-- District Filter (Duty Station) -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                        <select name="gender" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
-                            <option value="">All Genders</option>
-                            {% for gender in filter_options.genders %}
-                                <option value="{{ gender }}" {% if filters.gender == gender %}selected{% endif %}>
-                                    {{ gender|title }}
-                                </option>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">District</label>
+                        <select name="duty_station" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
+                            <option value="">All Districts</option>
+                            {% for station in filter_options.duty_stations %}
+                                <option value="{{ station }}" {% if filters.duty_station == station %}selected{% endif %}>{{ station|title }}</option>
                             {% endfor %}
                         </select>
                     </div>
 
-                    <!-- Date From Filter -->
+                    <!-- Project Filter (Agency) -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Created From</label>
-                        <input type="date" name="date_from" value="{{ filters.date_from|default:'' }}" 
-                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
-                    </div>
-
-                    <!-- Date To Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Created To</label>
-                        <input type="date" name="date_to" value="{{ filters.date_to|default:'' }}" 
-                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
-                    </div>
-
-                    <!-- Created By Role Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Created By Role</label>
-                        <select name="created_by_role" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
-                            <option value="">All Roles</option>
-                            {% for role in filter_options.roles %}
-                                <option value="{{ role }}" {% if filters.created_by_role == role %}selected{% endif %}>
-                                    {% if role == 'super_admin' %}Super Admin
-                                    {% elif role == 'security_admin' %}Security Admin
-                                    {% elif role == 'user' %}User
-                                    {% else %}{{ role|title }}{% endif %}
-                                </option>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Project</label>
+                        <select name="agency" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-30 transition-all duration-300">
+                            <option value="">All Projects</option>
+                            {% for agency in filter_options.agencies %}
+                                <option value="{{ agency }}" {% if filters.agency_project_cluster_office == agency %}selected{% endif %}>{{ agency|title }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -215,14 +164,14 @@
                     </div>
                     
                     <div class="flex space-x-3">
-                        <button type="button" onclick="exportToCSV()" 
+                        <button id="exportCsvBtn" type="button" onclick="exportToCSV()" 
                                 class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 shadow-lg hover:shadow-xl">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                             Export CSV
                         </button>
-                        <a href="{% url 'export_pdf' %}?{{ request.GET.urlencode }}" 
+                        <a id="exportPdfLink" href="{% url 'export_pdf' %}?{{ request.GET.urlencode }}" 
                            class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 shadow-lg hover:shadow-xl">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
@@ -372,6 +321,38 @@
 </div>
 
 <script>
+function csvEscape(value) {
+    if (value === null || value === undefined) return '';
+    const s = String(value);
+    return '"' + s.replace(/"/g, '""') + '"';
+}
+
+function toIsoDate(value) {
+    if (!value) return '';
+    const d = new Date(value);
+    if (isNaN(d.getTime())) {
+        // Try parsing like "Sep 11, 2025" specifically
+        try {
+            const parts = String(value).trim();
+            // If already like "Sep 11, 2025" let Date try again in en-US context
+            const parsed = Date.parse(parts);
+            if (!isNaN(parsed)) {
+                const d2 = new Date(parsed);
+                const y = d2.getFullYear();
+                const m = String(d2.getMonth() + 1).padStart(2, '0');
+                const day = String(d2.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            }
+        } catch (e) {}
+        // Fallback to raw text
+        return String(value);
+    }
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
 function exportToCSV() {
     // Get current filter parameters
     const urlParams = new URLSearchParams(window.location.search);
@@ -386,23 +367,35 @@ function exportToCSV() {
     });
     
     // Create CSV content
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Name,Employee ID,Agency,Duty Station,Contact Type,Nationality,Gender,Created Date,Created By\n";
+    // Prepend BOM for Excel to properly read UTF-8
+    let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+    csvContent += "Name,Employee ID,Agency,Duty Station,Contact Type,Created DateTime\n";
     
     // Get table data
     const rows = document.querySelectorAll('tbody tr');
     rows.forEach(row => {
         const cells = row.querySelectorAll('td');
         if (cells.length >= 6) {
-            const name = cells[0].textContent.trim().replace(/,/g, ';');
-            const employeeId = cells[0].querySelector('.text-sm.text-gray-500')?.textContent.replace('ID: ', '').trim() || '';
-            const agency = cells[1].textContent.trim().replace(/,/g, ';');
-            const dutyStation = cells[2].textContent.trim().replace(/,/g, ';');
-            const contactType = cells[3].textContent.trim().replace(/,/g, ';');
-            const createdBy = cells[4].textContent.trim().replace(/,/g, ';');
-            const createdDate = cells[5].textContent.trim().replace(/,/g, ';');
-            
-            csvContent += `${name},${employeeId},${agency},${dutyStation},${contactType},,${createdBy},${createdDate}\n`;
+            // Name: pick the explicit name div, not the avatar initial
+            const nameEl = cells[0].querySelector('div.ml-4 .text-sm.font-medium.text-gray-900');
+            const name = (nameEl ? nameEl.textContent : cells[0].textContent).trim();
+            // Employee ID from the grey subline
+            const empIdEl = cells[0].querySelector('div.ml-4 .text-sm.text-gray-500');
+            const employeeId = (empIdEl ? empIdEl.textContent : '').replace('ID: ', '').trim();
+            const agency = cells[1].textContent.trim();
+            const dutyStation = cells[2].textContent.trim();
+            const contactType = cells[3].textContent.trim();
+            // Created date/time: combine date (first line) and time (second line)
+            const createdDateEl = cells[5].querySelector('div.text-sm.text-gray-900');
+            const createdTimeEl = cells[5].querySelector('div.text-sm.text-gray-500');
+            const createdDateRaw = (createdDateEl ? createdDateEl.textContent : '').trim();
+            const createdTimeRaw = (createdTimeEl ? createdTimeEl.textContent : '').trim();
+            const isoDate = toIsoDate(createdDateRaw);
+            // Keep time as displayed (Excel will still import as text unless parsed further)
+            const createdDateTime = isoDate && createdTimeRaw ? `${isoDate} ${createdTimeRaw}` : (isoDate || createdDateRaw);
+            const rowCsv = [name, employeeId, agency, dutyStation, contactType, createdDateTime]
+                .map(csvEscape).join(',');
+            csvContent += rowCsv + "\n";
         }
     });
     
@@ -416,31 +409,26 @@ function exportToCSV() {
     document.body.removeChild(link);
 }
 
-// Add loading states for export buttons
+// Loading state for CSV only, and ensure PDF button remains normal after navigation
 document.addEventListener('DOMContentLoaded', function() {
-    const exportButtons = document.querySelectorAll('a[href*="export"], button[onclick*="export"]');
-    
-    exportButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Add loading state
-            const originalText = this.innerHTML;
+    const csvBtn = document.getElementById('exportCsvBtn');
+    const pdfLink = document.getElementById('exportPdfLink');
+    if (csvBtn) {
+        csvBtn.addEventListener('click', function() {
+            const original = this.innerHTML;
             this.innerHTML = `
-                <svg class="animate-spin w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                </svg>
+                <svg class=\"animate-spin w-5 h-5 mr-2\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n                    <circle class=\"opacity-25\" cx=\"12\" cy=\"12\" r=\"10\" stroke=\"currentColor\" stroke-width=\"4\"></circle>\n                    <path class=\"opacity-75\" fill=\"currentColor\" d=\"M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z\"></path>\n                </svg>
                 Exporting...
             `;
             this.disabled = true;
-            
-            // Reset after a delay (for CSV export)
-            if (this.onclick) {
-                setTimeout(() => {
-                    this.innerHTML = originalText;
-                    this.disabled = false;
-                }, 2000);
-            }
+            setTimeout(() => { this.innerHTML = original; this.disabled = false; }, 1200);
         });
-    });
+    }
+    if (pdfLink) {
+        pdfLink.addEventListener('click', function() {
+            // Do not change button content; let navigation proceed normally
+        });
+    }
 });
 </script>
 {% endblock %}

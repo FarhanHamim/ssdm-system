@@ -66,7 +66,7 @@
                                        name="email" 
                                        required 
                                        class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-20 focus:border-blue-600 transition-all duration-300 bg-white text-gray-900 placeholder-gray-400"
-                                       placeholder="Enter your email address">
+                                       placeholder="your.name@undp.org">
                             </div>
                         </div>
 
@@ -174,8 +174,97 @@ function togglePassword(inputId, iconId) {
     }
 }
 
+// Toast notification function
+function showToast(message, type = 'error') {
+    // Remove existing toast
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification fixed top-4 right-4 z-50 transform transition-all duration-300 ease-in-out';
+    toast.style.transform = 'translateX(100%)';
+    
+    const bgColor = type === 'error' ? 'bg-red-500' : 'bg-green-500';
+    const icon = type === 'error' ? 
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>' :
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+    
+    toast.innerHTML = `
+        <div class="${bgColor} text-white px-6 py-4 rounded-lg shadow-lg border-l-4 ${type === 'error' ? 'border-red-600' : 'border-green-600'}">
+            <div class="flex items-center">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    ${icon}
+                </svg>
+                <div>
+                    <p class="font-semibold">${message}</p>
+                </div>
+                <button onclick="this.closest('.toast-notification').remove()" class="ml-4 text-white hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 300);
+        }
+    }, 5000);
+}
+
+// Check for email validation errors and show toast
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if there are any error messages in the form
+    const errorMessages = document.querySelectorAll('.errorlist');
+    errorMessages.forEach(function(errorList) {
+        const errorText = errorList.textContent.trim();
+        if (errorText.includes('undp.org')) {
+            showToast('⚠️ Registration is restricted to UNDP staff only. Please use your @undp.org email address.', 'error');
+        }
+    });
+    
+    // Add real-time email validation
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+        emailInput.addEventListener('blur', function() {
+            const email = this.value.trim();
+            if (email && !email.toLowerCase().endsWith('@undp.org')) {
+                showToast('⚠️ Please use your @undp.org email address to register.', 'error');
+            }
+        });
+    }
+});
+
 // Add loading state to form submission
 document.querySelector('form').addEventListener('submit', function(e) {
+    const emailInput = document.getElementById('email');
+    const email = emailInput ? emailInput.value.trim() : '';
+    
+    // Check email before submission
+    if (email && !email.toLowerCase().endsWith('@undp.org')) {
+        e.preventDefault();
+        showToast('⚠️ Registration is restricted to UNDP staff only. Please use your @undp.org email address.', 'error');
+        return false;
+    }
+    
     const submitBtn = this.querySelector('button[type="submit"]');
     submitBtn.innerHTML = `
         <div class="flex items-center justify-center">

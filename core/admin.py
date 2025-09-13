@@ -47,6 +47,9 @@ class EmployeeProfileAdmin(admin.ModelAdmin):
         }),
     )
 
+    # Exclude approval workflow fields from admin
+    exclude = ('status', 'submitted_at', 'approved_at', 'approved_by', 'rejection_reason')
+
 @admin.register(Dependent)
 class DependentAdmin(admin.ModelAdmin):
     list_display = ('name', 'relationship', 'date_of_birth', 'employee_profile')

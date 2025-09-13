@@ -459,8 +459,20 @@
             </div>
             <h1 class="hero-title">{% if is_create %}Create New Employee Profile{% else %}Edit Employee Profile{% endif %}</h1>
             <p class="hero-subtitle">{% if is_create %}Complete the form below to create a comprehensive employee profile with all necessary information{% else %}Update and modify the employee profile information as needed{% endif %}</p>
+            {% if is_create %}
+            <div class="mt-6">
+                <a href="{% url 'dashboard' %}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-undp-blue via-undp-accent to-purple-600 hover:from-purple-600 hover:via-undp-accent hover:to-undp-blue text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-1 border-2 border-white/20 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <svg class="w-5 h-5 mr-2 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    <span class="relative z-10">Back to Dashboard</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                </a>
+            </div>
+            {% endif %}
             
-            <!-- Access Level Badge -->
+            <!-- Access Level Badge and Profile Status -->
             <div class="mt-4">
                 {% if user_role == 'user' %}
                     <span class="access-badge user">👤 User Access - Fields 1-25 Only</span>
@@ -469,6 +481,18 @@
                     <span class="access-badge admin">👑 Super Admin - All Fields Access</span>
                 {% endif %}
             </div>
+
+            {% if not is_create %}
+            <div class="mt-4">
+                {% if profile_status == 'complete' %}
+                    <span class="status-badge status-success">Profile Status: Complete</span>
+                {% elif profile_status == 'partially_completed' %}
+                    <span class="status-badge status-warning">Profile Status: Partially Completed (1-25 complete)</span>
+                {% else %}
+                    <span class="status-badge status-danger">Profile Status: Incomplete</span>
+                {% endif %}
+            </div>
+            {% endif %}
             
             {% if user_role == 'security_admin' %}
             <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">

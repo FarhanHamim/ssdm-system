@@ -15,7 +15,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from io import BytesIO
-from datetime import datetime
+import datetime as dt
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -24,6 +24,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils import timezone
+from zoneinfo import ZoneInfo
 
 def is_security_admin(user):
     return user.is_authenticated and user.role == 'security_admin'
@@ -46,16 +47,27 @@ def login_view(request):
     if request.method == 'POST':
         form = UserLoginForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data['username']
+            email = form.cleaned_data['email']
             password = form.cleaned_data['password']
-            user = authenticate(request, username=username, password=password)
+            
+            # Find user by email first
+            try:
+                user_obj = User.objects.get(email=email)
+                user = authenticate(request, username=user_obj.username, password=password)
+            except User.DoesNotExist:
+                user = None
             
             if user is not None:
+                # Enforce UNDP email domain for regular users only (not for security or super admins)
+                if user.role == 'user' and not user.email.lower().endswith('@undp.org'):
+                    messages.error(request, '⚠️ Access denied! This system is restricted to UNDP staff only. Please use your @undp.org email address to login.', extra_tags='undp_restriction')
+                    return render(request, 'core/login.html', {'form': form})
                 login(request, user)
-                messages.success(request, f'Welcome back, {user.get_full_name()}!')
+                display_name = user.get_full_name() or user.username
+                messages.success(request, f'Welcome back, {display_name}!')
                 return redirect('dashboard')
             else:
-                messages.error(request, 'Invalid username or password.')
+                messages.error(request, 'Invalid email or password.')
     else:
         form = UserLoginForm()
     
@@ -92,25 +104,21 @@ def dashboard_view(request):
             profile = EmployeeProfile.objects.get(created_by=user)
             context = {
                 'profile': profile,
-                'user_role': user.role
+                'user_role': user.role,
+                'profile_status': profile.get_completion_status()
             }
         except EmployeeProfile.DoesNotExist:
             context = {
                 'profile': None,
-                'user_role': user.role
+                'user_role': user.role,
+                'profile_status': 'incomplete'
             }
     else:
         # Admin dashboard - show all profiles
         profiles = EmployeeProfile.objects.all().order_by('-created_at')
         
-        # Get pending approvals for super admin
-        pending_approvals = []
-        if user.role == 'super_admin':
-            pending_approvals = EmployeeProfile.objects.filter(status='pending_approval').order_by('-submitted_at')
-        
         context = {
             'profiles': profiles,
-            'pending_approvals': pending_approvals,
             'user_role': user.role
         }
     
@@ -146,16 +154,6 @@ def profile_create_view(request):
             with transaction.atomic():
                 profile = form.save(commit=False)
                 profile.created_by = request.user
-                
-                # Set status based on user role
-                if request.user.role == 'super_admin':
-                    profile.status = 'approved'
-                    profile.approved_at = timezone.now()
-                    profile.approved_by = request.user
-                else:
-                    profile.status = 'pending_approval'
-                    profile.submitted_at = timezone.now()
-                
                 profile.save()
                 
                 # Only save dependents if the formset is valid
@@ -163,26 +161,26 @@ def profile_create_view(request):
                     dependent_formset.instance = profile
                     dependent_formset.save()
                 
-                # Create notification for super admin if not super admin
-                if request.user.role != 'super_admin':
-                    super_admins = User.objects.filter(role='super_admin')
-                    for super_admin in super_admins:
-                        Notification.objects.create(
-                            recipient=super_admin,
-                            sender=request.user,
-                            notification_type='profile_submitted',
-                            title=f'New Profile Submitted by {request.user.get_full_name()}',
-                            message=f'Profile for {profile.name} (ID: {profile.employee_id}) has been submitted and requires approval.',
-                            profile=profile
-                        )
+                # Notify all security admins after the transaction commits
+                def notify_security_admins(profile_id: int, created_by_id: int):
+                    try:
+                        created_by = User.objects.get(id=created_by_id)
+                        security_admins = User.objects.filter(role='security_admin')
+                        for admin in security_admins:
+                            Notification.objects.create(
+                                recipient=admin,
+                                sender=created_by,
+                                notification_type='profile_submitted',
+                                title='New Profile Created',
+                                message=f'{created_by.get_full_name() or created_by.username} created a new profile.',
+                                profile=EmployeeProfile.objects.get(id=profile_id)
+                            )
+                    except Exception:
+                        # Swallow notification errors to not block profile creation
+                        pass
+                transaction.on_commit(lambda: notify_security_admins(profile.id, request.user.id))
                 
-                # Different success message based on user role
-                if request.user.role == 'security_admin':
-                    messages.success(request, 'Security profile submitted successfully! It will be reviewed by a super admin.')
-                elif request.user.role == 'user':
-                    messages.success(request, 'Profile submitted successfully! It will be reviewed by a super admin.')
-                else:
-                    messages.success(request, 'Profile created and approved successfully!')
+                messages.success(request, 'Profile created successfully!')
                 return redirect('dashboard')
         else:
             # If main form is not valid, show errors
@@ -198,7 +196,8 @@ def profile_create_view(request):
         'form': form,
         'dependent_formset': dependent_formset,
         'user_role': request.user.role,
-        'is_create': True
+        'is_create': True,
+        'profile_status': 'incomplete'
     }
     return render(request, 'core/profile_form.html', context)
 
@@ -233,9 +232,7 @@ def profile_edit_view(request, pk):
                 with transaction.atomic():
                     updated_profile = form.save(commit=False)
                     
-                    # Set status to pending approval for security admin edits
-                    updated_profile.status = 'pending_approval'
-                    updated_profile.submitted_at = timezone.now()
+                    # No approval workflow needed
                     updated_profile.save()
                     
                     # Don't require dependent formset validation for security admins
@@ -244,20 +241,22 @@ def profile_edit_view(request, pk):
                             dependent_formset.save()
                     except:
                         pass  # Ignore dependent formset errors for security admins
+                    # Notify employee that security information was updated
+                    try:
+                        # Do not notify super admins
+                        if getattr(updated_profile.created_by, 'role', None) != 'super_admin':
+                            Notification.objects.create(
+                                recipient=updated_profile.created_by,
+                                sender=request.user,
+                                notification_type='security_update',
+                                title='Security Information Updated',
+                                message=f'Security-related fields for your profile ({updated_profile.name}) were updated by Security Admin.',
+                                profile=updated_profile
+                            )
+                    except Exception:
+                        pass
                     
-                    # Create notification for super admin
-                    super_admins = User.objects.filter(role='super_admin')
-                    for super_admin in super_admins:
-                        Notification.objects.create(
-                            recipient=super_admin,
-                            sender=request.user,
-                            notification_type='security_update',
-                            title=f'Security Information Updated by {request.user.get_full_name()}',
-                            message=f'Security information for {updated_profile.name} (ID: {updated_profile.employee_id}) has been updated and requires approval.',
-                            profile=updated_profile
-                        )
-                    
-                    messages.success(request, 'Security information updated successfully! It will be reviewed by a super admin.')
+                    messages.success(request, 'Security information updated successfully!')
                     return redirect('dashboard')
         else:
             # Regular validation for other roles
@@ -265,14 +264,7 @@ def profile_edit_view(request, pk):
                 with transaction.atomic():
                     updated_profile = form.save(commit=False)
                     
-                    # Set status based on user role
-                    if request.user.role == 'super_admin':
-                        updated_profile.status = 'approved'
-                        updated_profile.approved_at = timezone.now()
-                        updated_profile.approved_by = request.user
-                    else:
-                        updated_profile.status = 'pending_approval'
-                        updated_profile.submitted_at = timezone.now()
+                    
                     
                     updated_profile.save()
                     
@@ -282,24 +274,22 @@ def profile_edit_view(request, pk):
                             dependent_formset.save()
                     except:
                         pass  # Ignore dependent formset errors for regular users
-                    
-                    # Create notification for super admin if not super admin
-                    if request.user.role != 'super_admin':
-                        super_admins = User.objects.filter(role='super_admin')
-                        for super_admin in super_admins:
+                    # Notify all security admins that employee updated data
+                    try:
+                        security_admins = User.objects.filter(role='security_admin')
+                        for admin in security_admins:
                             Notification.objects.create(
-                                recipient=super_admin,
+                                recipient=admin,
                                 sender=request.user,
                                 notification_type='profile_edited',
-                                title=f'Profile Edited by {request.user.get_full_name()}',
-                                message=f'Profile for {updated_profile.name} (ID: {updated_profile.employee_id}) has been edited and requires approval.',
+                                title='Employee Profile Updated',
+                                message=f'{request.user.get_full_name()} updated their profile ({updated_profile.name}).',
                                 profile=updated_profile
                             )
+                    except Exception:
+                        pass
                     
-                    if request.user.role == 'super_admin':
-                        messages.success(request, 'Profile updated and approved successfully!')
-                    else:
-                        messages.success(request, 'Profile updated successfully! It will be reviewed by a super admin.')
+                    messages.success(request, 'Profile updated successfully!')
                     return redirect('dashboard')
     else:
         form = EmployeeProfileForm(instance=profile, user_role=request.user.role)
@@ -310,7 +300,8 @@ def profile_edit_view(request, pk):
         'dependent_formset': dependent_formset,
         'profile': profile,
         'user_role': request.user.role,
-        'is_create': False
+        'is_create': False,
+        'profile_status': profile.get_completion_status()
     }
     return render(request, 'core/profile_form.html', context)
 
@@ -337,58 +328,6 @@ def profile_detail_view(request, pk):
     }
     return render(request, 'core/profile_detail.html', context)
 
-@login_required
-@user_passes_test(is_super_admin)
-def approve_profile_view(request, pk):
-    profile = get_object_or_404(EmployeeProfile, pk=pk)
-    
-    if request.method == 'POST':
-        with transaction.atomic():
-            profile.status = 'approved'
-            profile.approved_at = timezone.now()
-            profile.approved_by = request.user
-            profile.save()
-            
-            # Create notification for the profile creator
-            Notification.objects.create(
-                recipient=profile.created_by,
-                sender=request.user,
-                notification_type='profile_approved',
-                title=f'Profile Approved by {request.user.get_full_name()}',
-                message=f'Your profile for {profile.name} (ID: {profile.employee_id}) has been approved.',
-                profile=profile
-            )
-            
-            messages.success(request, f'Profile for {profile.name} has been approved successfully!')
-    
-    return redirect('profile_detail', pk=pk)
-
-@login_required
-@user_passes_test(is_super_admin)
-def reject_profile_view(request, pk):
-    profile = get_object_or_404(EmployeeProfile, pk=pk)
-    
-    if request.method == 'POST':
-        rejection_reason = request.POST.get('rejection_reason', '')
-        
-        with transaction.atomic():
-            profile.status = 'rejected'
-            profile.rejection_reason = rejection_reason
-            profile.save()
-            
-            # Create notification for the profile creator
-            Notification.objects.create(
-                recipient=profile.created_by,
-                sender=request.user,
-                notification_type='profile_rejected',
-                title=f'Profile Rejected by {request.user.get_full_name()}',
-                message=f'Your profile for {profile.name} (ID: {profile.employee_id}) has been rejected. Reason: {rejection_reason}',
-                profile=profile
-            )
-            
-            messages.success(request, f'Profile for {profile.name} has been rejected.')
-    
-    return redirect('profile_detail', pk=pk)
 
 @login_required
 def notifications_view(request):
@@ -421,6 +360,28 @@ def get_notification_count_view(request):
     """AJAX view to get unread notification count"""
     unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
     return JsonResponse({'unread_count': unread_count})
+
+@login_required
+def get_notifications_list_view(request):
+    """AJAX view to get recent notifications list for the navbar dropdown"""
+    limit = int(request.GET.get('limit', 10))
+    notifications_qs = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+    notifications = notifications_qs[:limit]
+    # Count all unread for accuracy (not only within the slice)
+    unread_count = notifications_qs.filter(is_read=False).count()
+    dhaka_tz = ZoneInfo('Asia/Dhaka')
+    data = [
+        {
+            'id': n.id,
+            'title': n.title,
+            'message': n.message,
+            'type': n.notification_type,
+            'is_read': n.is_read,
+            'created_at': timezone.localtime(n.created_at, dhaka_tz).strftime('%b %d, %Y %I:%M %p')
+        }
+        for n in notifications
+    ]
+    return JsonResponse({'notifications': data, 'unread_count': unread_count})
 
 def update_dependent_forms(request):
     """AJAX view to update the number of dependent forms"""
@@ -476,67 +437,57 @@ def report_generation_view(request):
     filters = {}
     
     if request.method == 'GET':
-        # Apply filters based on GET parameters
-        agency = request.GET.get('agency')
-        duty_station = request.GET.get('duty_station')
-        nationality = request.GET.get('nationality')
-        contact_type = request.GET.get('contact_type')
-        gender = request.GET.get('gender')
-        date_from = request.GET.get('date_from')
-        date_to = request.GET.get('date_to')
-        created_by_role = request.GET.get('created_by_role')
+        # Apply filters based on GET parameters (restricted set)
+        agency = request.GET.get('agency')                 # Project
+        duty_station = request.GET.get('duty_station')     # District
+        contact_type = request.GET.get('contact_type')     # Level
+        zone = request.GET.get('zone')                     # Zone
         
         if agency:
             filters['agency'] = agency
-            profiles = profiles.filter(agency_project_cluster_office=agency)
+            profiles = profiles.filter(agency_project_cluster_office__iexact=agency)
         
         if duty_station:
             filters['duty_station'] = duty_station
-            profiles = profiles.filter(duty_station=duty_station)
-        
-        if nationality:
-            filters['nationality'] = nationality
-            profiles = profiles.filter(nationality=nationality)
+            profiles = profiles.filter(duty_station__iexact=duty_station)
         
         if contact_type:
             filters['contact_type'] = contact_type
-            profiles = profiles.filter(contact_type=contact_type)
-        
-        if gender:
-            filters['gender'] = gender
-            profiles = profiles.filter(gender=gender)
-        
-        if date_from:
-            filters['date_from'] = date_from
-            # Convert string date to datetime for comparison
-            from datetime import datetime
-            date_from_dt = datetime.strptime(date_from, '%Y-%m-%d')
-            profiles = profiles.filter(created_at__gte=date_from_dt)
-        
-        if date_to:
-            filters['date_to'] = date_to
-            # Convert string date to datetime for comparison
-            date_to_dt = datetime.strptime(date_to, '%Y-%m-%d')
-            # Add one day to include the entire day
-            from datetime import timedelta
-            date_to_dt = date_to_dt + timedelta(days=1)
-            profiles = profiles.filter(created_at__lt=date_to_dt)
-        
-        if created_by_role:
-            filters['created_by_role'] = created_by_role
-            profiles = profiles.filter(created_by__role=created_by_role)
+            profiles = profiles.filter(contact_type__iexact=contact_type)
+        if zone:
+            filters['zone'] = zone
+            # Handle case-insensitive zone filtering since we format zones with title case
+            profiles = profiles.filter(zone__iexact=zone)
         
         # Apply ordering
         profiles = profiles.order_by('-created_at')
     
-    # Get unique values for filter dropdowns from ALL profiles (not filtered)
+    # Get unique values for filter dropdowns (restricted to Project, District, Level, Zone)
     all_profiles = EmployeeProfile.objects.all()
-    agencies = all_profiles.values_list('agency_project_cluster_office', flat=True).distinct().exclude(agency_project_cluster_office__isnull=True).exclude(agency_project_cluster_office='')
-    duty_stations = all_profiles.values_list('duty_station', flat=True).distinct().exclude(duty_station__isnull=True).exclude(duty_station='')
-    nationalities = all_profiles.values_list('nationality', flat=True).distinct().exclude(nationality__isnull=True).exclude(nationality='')
-    contact_types = all_profiles.values_list('contact_type', flat=True).distinct().exclude(contact_type__isnull=True).exclude(contact_type='')
-    genders = all_profiles.values_list('gender', flat=True).distinct().exclude(gender__isnull=True).exclude(gender='')
-    roles = User.objects.values_list('role', flat=True).distinct().exclude(role__isnull=True).exclude(role='')
+    
+    # Get unique agencies and sort them alphabetically (handle whitespace and case)
+    agencies = sorted(set([agency.strip() for agency in 
+                          all_profiles.values_list('agency_project_cluster_office', flat=True)
+                          .exclude(agency_project_cluster_office__isnull=True)
+                          .exclude(agency_project_cluster_office='') if agency.strip()]))
+    
+    # Get unique duty stations and sort them alphabetically (handle whitespace and case)
+    duty_stations = sorted(set([station.strip() for station in 
+                               all_profiles.values_list('duty_station', flat=True)
+                               .exclude(duty_station__isnull=True)
+                               .exclude(duty_station='') if station.strip()]))
+    
+    # Get unique contact types and sort them alphabetically (handle whitespace and case)
+    contact_types = sorted(set([contact.strip() for contact in 
+                               all_profiles.values_list('contact_type', flat=True)
+                               .exclude(contact_type__isnull=True)
+                               .exclude(contact_type='') if contact.strip()]))
+    
+    # Get unique zones, filter out empty/null values, and sort them alphabetically (handle whitespace and case)
+    zones = sorted(set([zone.strip().title() for zone in 
+                       all_profiles.values_list('zone', flat=True)
+                       .exclude(zone__isnull=True)
+                       .exclude(zone='') if zone.strip()]))
     
     # Generate statistics based on filtered profiles
     stats = {
@@ -555,12 +506,10 @@ def report_generation_view(request):
         'stats': stats,
         'filters': filters,
         'filter_options': {
-            'agencies': agencies,
-            'duty_stations': duty_stations,
-            'nationalities': nationalities,
-            'contact_types': contact_types,
-            'genders': genders,
-            'roles': roles,
+            'agencies': agencies,            # Project wise
+            'duty_stations': duty_stations,  # District wise
+            'contact_types': contact_types,  # Level wise
+            'zones': zones,                  # Zone wise
         }
     }
     
@@ -573,45 +522,25 @@ def export_pdf_view(request):
     profiles = EmployeeProfile.objects.all()
     
     # Apply the same filters as the report generation view
-    agency = request.GET.get('agency')
-    duty_station = request.GET.get('duty_station')
-    nationality = request.GET.get('nationality')
-    contact_type = request.GET.get('contact_type')
-    gender = request.GET.get('gender')
-    date_from = request.GET.get('date_from')
-    date_to = request.GET.get('date_to')
-    created_by_role = request.GET.get('created_by_role')
+    agency = request.GET.get('agency')                 # Project
+    duty_station = request.GET.get('duty_station')     # District
+    contact_type = request.GET.get('contact_type')     # Level
+    zone = request.GET.get('zone')                     # Zone
     
     if agency:
         profiles = profiles.filter(agency_project_cluster_office=agency)
     if duty_station:
         profiles = profiles.filter(duty_station=duty_station)
-    if nationality:
-        profiles = profiles.filter(nationality=nationality)
     if contact_type:
         profiles = profiles.filter(contact_type=contact_type)
-    if gender:
-        profiles = profiles.filter(gender=gender)
-    if date_from:
-        # Convert string date to datetime for comparison
-        from datetime import datetime
-        date_from_dt = datetime.strptime(date_from, '%Y-%m-%d')
-        profiles = profiles.filter(created_at__gte=date_from_dt)
-    if date_to:
-        # Convert string date to datetime for comparison
-        date_to_dt = datetime.strptime(date_to, '%Y-%m-%d')
-        # Add one day to include the entire day
-        from datetime import timedelta
-        date_to_dt = date_to_dt + timedelta(days=1)
-        profiles = profiles.filter(created_at__lt=date_to_dt)
-    if created_by_role:
-        profiles = profiles.filter(created_by__role=created_by_role)
+    if zone:
+        profiles = profiles.filter(zone=zone)
     
     profiles = profiles.order_by('-created_at')
     
     # Create the HttpResponse object with PDF headers
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="employee_profiles_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="employee_profiles_{dt.datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
     
     # Create the PDF object using ReportLab
     buffer = BytesIO()
@@ -642,29 +571,22 @@ def export_pdf_view(request):
         textColor=colors.grey
     )
     
-    # Build filter description
+    # Build filter description (restricted filters)
     filter_descriptions = []
     if agency:
-        filter_descriptions.append(f"Agency: {agency}")
+        filter_descriptions.append(f"Project: {agency}")
     if duty_station:
-        filter_descriptions.append(f"Duty Station: {duty_station}")
-    if nationality:
-        filter_descriptions.append(f"Nationality: {nationality}")
+        filter_descriptions.append(f"District: {duty_station}")
     if contact_type:
-        filter_descriptions.append(f"Contact Type: {contact_type}")
-    if gender:
-        filter_descriptions.append(f"Gender: {gender}")
-    if date_from:
-        filter_descriptions.append(f"From: {date_from}")
-    if date_to:
-        filter_descriptions.append(f"To: {date_to}")
-    if created_by_role:
-        filter_descriptions.append(f"Created By Role: {created_by_role}")
+        filter_descriptions.append(f"Level: {contact_type}")
+    if zone:
+        filter_descriptions.append(f"Zone: {zone}")
     
     filter_text = ', '.join(filter_descriptions) if filter_descriptions else 'None'
     
+    # Use Bangladesh time for generation timestamp
     metadata = f"""
-    Generated on: {datetime.now().strftime("%B %d, %Y at %I:%M %p")}<br/>
+    Generated on: {timezone.localtime(timezone.now(), ZoneInfo('Asia/Dhaka')).strftime("%B %d, %Y at %I:%M %p")}<br/>
     Total Profiles: {profiles.count()}<br/>
     Filters Applied: {filter_text}
     """

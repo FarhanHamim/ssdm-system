@@ -259,57 +259,89 @@
                 <p class="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">UNDP's Staff and Dependent Data Management System - Your central hub for staff and dependent information management.</p>
         </div>
 
-            {% if profile %}
-                <!-- Profile Exists - Show Edit Option -->
-                <div class="flex justify-center animate-slide-up">
-                            {% if user.role == 'user' %}
-                                {% if not profile %}
-                                    <a href="{% url 'profile_create' %}" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-undp-blue via-undp-accent to-purple-600 hover:from-purple-600 hover:via-undp-accent hover:to-undp-blue text-white font-bold rounded-2xl shadow-2xl hover:shadow-undp-xl transition-all duration-500 transform hover:scale-110 hover:-translate-y-1 border-2 border-white/20 relative overflow-hidden group">
-                                        <div class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                        <svg class="w-6 h-6 mr-3 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                        </svg>
-                                        <span class="relative z-10">Create Profile</span>
-                                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                                    </a>
-                                {% else %}
-                                    <!-- User has profile - show both Edit and View buttons -->
-                                    <div class="flex flex-col sm:flex-row gap-4 items-center">
-                                        <a href="{% url 'profile_edit' profile.id %}" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white font-bold rounded-2xl shadow-2xl hover:shadow-xl transition-all duration-500 transform hover:scale-110 hover:-translate-y-1 border-2 border-white/20 relative overflow-hidden group">
-                                            <div class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                            <svg class="w-6 h-6 mr-3 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                            </svg>
-                                            <span class="relative z-10">Edit Profile</span>
-                                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                                        </a>
-                                        
-                                        <a href="{% url 'profile_edit' profile.id %}" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-undp-blue via-undp-accent to-purple-600 hover:from-purple-600 hover:via-undp-accent hover:to-undp-blue text-white font-bold rounded-2xl shadow-2xl hover:shadow-xl transition-all duration-500 transform hover:scale-110 hover:-translate-y-1 border-2 border-white/20 relative overflow-hidden group">
-                                            <div class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                            <svg class="w-6 h-6 mr-3 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                        </svg>
-                                            <span class="relative z-10">View Profile</span>
-                                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                    </a>
-                </div>
-                
-                                    <!-- Profile Status Information -->
-                                    <div class="mt-6 text-center">
-                                        <div class="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                                            Profile Submitted Successfully
+            {% if user.role == 'user' %}
+                <!-- User Dashboard Actions -->
+                <div class="flex justify-center items-stretch gap-6 flex-wrap animate-slide-up">
+                    {% if not profile %}
+                        <!-- Status Card for No Profile -->
+                        <div class="">
+                            <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4 shadow-undp flex items-center gap-3 w-80 h-24">
+                                <div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-red-800 font-extrabold text-sm">Profile: Incomplete</h3>
+                                    <p class="text-red-700 text-xs">Create profile and fill fields 1–25.</p>
+                                </div>
+                            </div>
                         </div>
-                                        <p class="text-gray-600 mt-2 text-sm">Last updated: {{ profile.updated_at|date:"M d, Y" }}</p>
-                    </div>
-                                {% endif %}
+
+                        <!-- No Profile - Show Create Button -->
+                        <a href="{% url 'profile_create' %}" class="inline-flex justify-center items-center w-80 h-24 px-8 bg-gradient-to-r from-undp-blue via-undp-accent to-purple-600 hover:from-purple-600 hover:via-undp-accent hover:to-undp-blue text-white font-bold rounded-2xl shadow-2xl hover:shadow-undp-xl transition-all duration-500 transform hover:scale-110 hover:-translate-y-1 border-2 border-white/20 relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <svg class="w-6 h-6 mr-3 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            <span class="relative z-10">Create Profile</span>
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                        </a>
+                    {% else %}
+                        <!-- Profile Exists - Show Update Button Only -->
+                        <div class="flex justify-center">
+                            <a href="{% url 'profile_edit' profile.id %}" class="inline-flex items-center justify-center w-80 h-24 px-8 bg-gradient-to-r from-undp-blue to-undp-accent hover:from-undp-accent hover:to-undp-blue text-white font-bold rounded-2xl shadow-2xl hover:shadow-undp-xl transition-all duration-500 transform hover:scale-110 hover:-translate-y-1 border-2 border-white/20 relative overflow-hidden group">
+                                <div class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                <svg class="w-6 h-6 mr-3 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                                <span class="relative z-10">Update Profile</span>
+                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                            </a>
+                        </div>
+                        
+                        <!-- Profile Status Information -->
+                        <div class="mt-6">
+                            {% if profile_status == 'complete' %}
+                                <div class="bg-green-50 border-2 border-green-200 rounded-xl p-4 shadow-undp flex items-center gap-3 w-80 h-24 mx-auto">
+                                    <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-green-800 font-extrabold text-sm">Profile: Complete</h3>
+                                        <p class="text-gray-600 mt-1 text-xs">Updated {{ profile.updated_at|date:"M d, Y" }}</p>
+                                    </div>
+                                </div>
+                            {% elif profile_status == 'partially_completed' %}
+                                <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4 shadow-undp flex items-center gap-3 w-80 h-24 mx-auto">
+                                    <div class="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-yellow-800 font-extrabold text-sm">Profile: Partially Completed</h3>
+                                        <p class="text-gray-600 mt-1 text-xs">Updated {{ profile.updated_at|date:"M d, Y" }}</p>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4 shadow-undp flex items-center gap-3 w-80 h-24 mx-auto">
+                                    <div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-red-800 font-extrabold text-sm">Profile: Incomplete</h3>
+                                        <p class="text-gray-600 mt-1 text-xs">Updated {{ profile.updated_at|date:"M d, Y" }}</p>
+                                    </div>
+                                </div>
                             {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
-
-
             {% endif %}
                 </div>
             </div>

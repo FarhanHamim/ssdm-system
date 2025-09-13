@@ -10,6 +10,12 @@ class UserSignupForm(forms.ModelForm):
         model = User
         fields = ['username', 'email', 'first_name', 'last_name']
     
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '')
+        if not email.lower().endswith('@undp.org'):
+            raise forms.ValidationError('⚠️ Registration is restricted to UNDP staff only. Please use your @undp.org email address to create an account.')
+        return email
+
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
@@ -408,10 +414,10 @@ DependentFormSet = inlineformset_factory(
 )
 
 class UserLoginForm(forms.Form):
-    username = forms.CharField(
-        widget=forms.TextInput(attrs={
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
             'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-            'placeholder': 'Username'
+            'placeholder': 'your.name@undp.org'
         })
     )
     password = forms.CharField(

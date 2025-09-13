@@ -30,23 +30,23 @@
                     <form method="post" class="space-y-4 sm:space-y-6">
                         {% csrf_token %}
                         
-                        <!-- Username Field -->
+                        <!-- Email Field -->
                         <div class="space-y-2">
-                            <label for="username" class="block text-sm font-semibold text-gray-700">
-                                Username
+                            <label for="email" class="block text-sm font-semibold text-gray-700">
+                                Email
                             </label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
                                     <svg class="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                     </svg>
                                 </div>
-                                <input type="text" 
-                                       id="username" 
-                                       name="username" 
+                                <input type="email" 
+                                       id="email" 
+                                       name="email" 
                                        required 
                                        class="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-20 focus:border-blue-600 transition-all duration-300 bg-white text-gray-900 placeholder-gray-400 text-sm sm:text-base"
-                                       placeholder="Enter your username">
+                                       placeholder="your.name@undp.org">
                             </div>
                         </div>
 
@@ -142,14 +142,94 @@ function togglePassword() {
     }
 }
 
+// Toast notification function
+function showToast(message, type = 'error') {
+    // Remove existing toast
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification fixed top-4 right-4 z-50 transform transition-all duration-300 ease-in-out';
+    toast.style.transform = 'translateX(100%)';
+    
+    const bgColor = type === 'error' ? 'bg-red-500' : 'bg-green-500';
+    const icon = type === 'error' ? 
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>' :
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+    
+    toast.innerHTML = `
+        <div class="${bgColor} text-white px-6 py-4 rounded-lg shadow-lg border-l-4 ${type === 'error' ? 'border-red-600' : 'border-green-600'}">
+            <div class="flex items-center">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    ${icon}
+                </svg>
+                <div>
+                    <p class="font-semibold">${message}</p>
+                </div>
+                <button onclick="this.closest('.toast-notification').remove()" class="ml-4 text-white hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 300);
+        }
+    }, 5000);
+}
+
+// Check for login errors and show toast (server-driven)
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if there are any error messages in the form
+    const errorMessages = document.querySelectorAll('.errorlist');
+    errorMessages.forEach(function(errorList) {
+        const errorText = errorList.textContent.trim();
+        if (errorText.includes('undp.org')) {
+            showToast('⚠️ Access denied! This system is restricted to UNDP staff only. Please use your @undp.org email address.', 'error');
+        }
+    });
+    
+    // Check for Django messages with undp_restriction tag
+    const messages = document.querySelectorAll('.messages .alert, .messages .error');
+    messages.forEach(function(message) {
+        const messageText = message.textContent.trim();
+        if (message.classList.contains('undp_restriction')) {
+            showToast('⚠️ Access denied! This system is restricted to UNDP staff only. Please use your @undp.org email address.', 'error');
+        }
+    });
+    
+    // Client-side domain enforcement removed to allow admins without @undp.org
+});
+
 // Add loading state to form submission
 document.querySelector('form').addEventListener('submit', function(e) {
+    
     const submitBtn = this.querySelector('button[type="submit"]');
     submitBtn.innerHTML = `
         <div class="flex items-center justify-center">
             <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             Signing In...
         </div>
