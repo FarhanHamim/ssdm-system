@@ -4,3 +4,4 @@ reportlab>=4.0.0  # For PDF generation
 psycopg2-binary>=2.9.0  # PostgreSQL adapter for production
 whitenoise>=6.0.0  # Static file serving
 gunicorn>=20.1.0  # WSGI server for production
+dj-database-url>=2.1.0  # Database URL parsing
