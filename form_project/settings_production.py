@@ -13,7 +13,7 @@ DEBUG = False
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key-here')
 
 # Allow all hosts for Render
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', 'sddm-system.onrender.com', '.onrender.com']
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
